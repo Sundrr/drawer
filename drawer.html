@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>
+            Drawer
+        </title>
+    </head>
+    <body>
+        <p id='text'>Here will be the drawer!</p>
+        <canvas height="300" width="600" id="canvas"></canvas>
+        <script>
+            let canv = document.getElementById("canvas");
+            ctx = canv.getContext('2d');
+
+            for (let x = 0.5; x < canv.width; x += 10) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canv.height);
+            }
+            ctx.strokeStyle = '#eee';
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#000';
+            ctx = ctx.strokeRect(0, 0, canv.width, canv.height);
+
+            t = document.getElementById("text");
+            setTimeout(() => t.innerHTML = 'Another text', 5000);
+        </script>
+    </body>
+</html>
