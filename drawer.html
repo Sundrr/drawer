@@ -20,9 +20,17 @@
             
             ctx.strokeStyle = '#000';
             ctx = ctx.strokeRect(0, 0, canv.width, canv.height);
-
+            
             t = document.getElementById("text");
-            setTimeout(() => t.innerHTML = 'Another text', 5000);
+            // setTimeout(() => t.innerHTML = 'Another text', 5000);
+            
+
+            let count = 1;
+            document.onclick = function (t) {
+                t.innerHTML = `Counter: ${count}`;
+                count += 1;
+            }
+
         </script>
     </body>
 </html>
