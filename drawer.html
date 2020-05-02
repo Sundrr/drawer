@@ -13,6 +13,7 @@
             <select size="1" id="type">
                 <option selected value="rays">rays</option>
                 <option value="pencil">pencil</option>
+                <option value="eraser">eraser</option>
             </select>
         </p>
         <p>
@@ -25,9 +26,10 @@
                 <option value=5>5</option>
                 <option value=8>8</option>
                 <option value=10>10</option>
+                <option value=15>15</option>
             </select>
         </p>
-        <p>
+        <p id="color_block">
             Color: 
             <select size="1" id="color">
                 <option selected value="255, 0, 0">red</option>
@@ -38,7 +40,7 @@
                 <option value="255, 255, 0">yellow</option>
             </select>
         </p>
-        <p>
+        <p id="alpha_block">
             Transparancy: 
             <select size="1" id="alpha">
                 <option selected value="0.2">0.2</option>
@@ -66,71 +68,83 @@
             ctx.strokeStyle = '#eee';
             ctx.stroke();
             let box = canv.getBoundingClientRect();
-            let pointX, pointY
-            let typeOption = document.getElementById("type").options.selectedIndex;
 
             // handle selects //
 
-            function changeParams() {
-                
-            }
+            let typeVal = document.getElementById("type").value;
+            let colorVal = document.getElementById("color").value;
+            let alphaVal = document.getElementById("alpha").value;
+            let widthVal = document.getElementById("width").value;
 
+            document.getElementById("type").addEventListener("change", () => {
+                typeVal = document.getElementById("type").value;
+                if ((typeVal === "pencil") || (typeVal === "eraser")) {
+                    document.getElementById("alpha_block").style.display = 'none';
+                } else {
+                    document.getElementById("alpha_block").style.display = 'block';
+                }
+                if (typeVal === "eraser") {
+                    document.getElementById("color_block").style.display = 'none';
+                } else {
+                    document.getElementById("color_block").style.display = 'block';
+                }
+            })
+            document.getElementById("color").addEventListener("change", () => {
+                colorVal = document.getElementById("color").value;
+            })
+            document.getElementById("alpha").addEventListener("change", () => {
+                alphaVal = document.getElementById("alpha").value;
+            })
+            document.getElementById("width").addEventListener("change", () => {
+                widthVal = document.getElementById("width").value;
+            })
 
             // functions //
 
-            function showCoords (e, typeOption) {
-                typeOption = document.getElementById("type").options.selectedIndex;
-                if (typeOption !== 6) {
-                    let canvas_x = e.clientX - box.left;
-                    let canvas_y = e.clientY - box.top;
-                    t = document.getElementById("text1");
-                    t.innerHTML = `Coordinates: ${canvas_x}, ${canvas_y}`;
-                }
-            }
-
-            function getParams() {
-                let colorOption = document.getElementById("color").options.selectedIndex;
-                let colorVal = document.getElementById("color").options[colorOption].value;
-                let alphaOption = document.getElementById("alpha").options.selectedIndex;
-                let alphaVal = document.getElementById("alpha").options[alphaOption].value;
-                let colorCombined = `rgba(${colorVal}, ${alphaVal})`;
-                let widthOption = document.getElementById("width").options.selectedIndex;
-                let widthVal = document.getElementById("width").options[widthOption].value;
-                console.log('in func', colorCombined)
-                return colorCombined, widthVal;
+            function showCoords (e) {
+                let canvasX = e.clientX - box.left;
+                let canvasY = e.clientY - box.top;
+                document.getElementById("text1").innerHTML = `Coordinates: ${canvasX}, ${canvasY}`;
             }
 
             function drawRays(e) {
                 let canvasX = e.clientX - box.left;
                 let canvasY = e.clientY - box.top;
-                let colorCombined, widthVal
-                colorCombined, widthVal = getParams()
-                console.log('out', colorCombined)
                 ctx.beginPath();
                 ctx.moveTo(canvasX, canvasY);
                 ctx.lineTo(pointX, pointY);
                 ctx.lineWidth = widthVal;
-                ctx.strokeStyle = colorCombined;
+                ctx.strokeStyle = `rgba(${colorVal}, ${alphaVal})`;
                 ctx.stroke();
             }
 
             function drawFree(e) {
-                // let nowX = e.clientX - box.left, nowY = e.clientY - box.top;
-                // let oldX = e.clientX - box.left, oldY = e.clientY - box.top;
-
-                nowX = e.clientX - box.left;
-                nowY = e.clientY - box.top;
+                let nowX = e.clientX - box.left;
+                let nowY = e.clientY - box.top;
                 if (nowX === oldX && nowY === oldY) return;
-
                 ctx.beginPath();
                 ctx.moveTo(nowX, nowY);
                 ctx.lineTo(oldX, oldY);
-                let colorOption = document.getElementById("color").options.selectedIndex;
-                let colorVal = document.getElementById("color").options[colorOption].value;
-                let widthOption = document.getElementById("width").options.selectedIndex;
-                let widthVal = document.getElementById("width").options[widthOption].value;
                 ctx.lineWidth = widthVal;
-                ctx.strokeStyle = colorVal;
+                ctx.strokeStyle = `rgba(${colorVal}, ${1})`;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';                
+                ctx.stroke();
+                oldX = nowX, oldY = nowY;
+            }
+
+            function drawErase(e) {
+                let nowX = e.clientX - box.left;
+                let nowY = e.clientY - box.top;
+                if (nowX === oldX && nowY === oldY) return;
+                ctx.beginPath();
+                ctx.moveTo(nowX, nowY);
+                ctx.lineTo(oldX, oldY);
+                ctx.lineWidth = widthVal;
+                let whiteColor = '255, 255, 255';
+                ctx.strokeStyle = `rgba(${whiteColor}, ${1})`;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';                
                 ctx.stroke();
                 oldX = nowX, oldY = nowY;
             }
@@ -145,22 +159,24 @@
 
                 t2 = document.getElementById("text2");
                 t2.innerHTML = 'Mouse is pressed';
-                typeOption = document.getElementById("type").options.selectedIndex;
-                if (typeOption == 0) {
+                if (typeVal == 'rays') {
                     canvas.addEventListener('mousemove', drawRays);
-                } else {
+                } else if (typeVal == 'pencil') {
                     canvas.addEventListener('mousemove', drawFree);
+                } else {
+                    canvas.addEventListener('mousemove', drawErase);
                 }
             }
 
             canvas.onmouseup = function () {
                 t2 = document.getElementById("text2");
                 t2.innerHTML = 'Mouse is released';
-                typeOption = document.getElementById("type").options.selectedIndex;
-                if (typeOption == 0) {
+                if (typeVal === 'rays') {
                     canvas.removeEventListener('mousemove', drawRays);
-                } else {
+                } else if (typeVal === 'pencil') {
                     canvas.removeEventListener('mousemove', drawFree);
+                } else {
+                    canvas.removeEventListener('mousemove', drawErase);
                 }
             }
 
